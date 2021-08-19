@@ -25,9 +25,9 @@
 //     Function('return this')() ||
 //     {};
 
-// // Save bytes in the minified (but not gziiped) version:
-// var ArrayProto = Array.prototype, ObjProto = Object.prototype;
-// var SymbolProto = typeof Symbol != 'undefined' ? Symbol.prototype : null;
+// Save bytes in the minified (but not gziiped) version:
+var ArrayProto = Array.prototype, ObjProto = Object.prototype;
+var SymbolProto = typeof Symbol != 'undefined' ? Symbol.prototype : null;
 
 // Create quick reference variables for speed access to core prototypes.
 var push = ArrayProto.push,
@@ -50,10 +50,10 @@ var nativeIsArray = Array.isArray,
 var _isNaN = isNaN,
     _isFinite = isFinite;
 
-// // keys in IE < 9 that won't be iterated by `for key in ...` and thus missed.
-// var hasEnumBug = !{toString:null}.propertyIsEnumerable('toString'); 
-// var nonEnumerableProps = ['valueOf', 'isPrototypeOf', 'toString',
-// 'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString'];
+// keys in IE < 9 that won't be iterated by `for key in ...` and thus missed.
+var hasEnumBug = !{ toString: null }.propertyIsEnumerable('toString');
+var nonEnumerableProps = ['valueOf', 'isPrototypeOf', 'toString',
+    'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString'];
 
 // // The largest integer that can be represented exactly.
 var MAX_ARRAY_INDEX = Math.pow(2, 53) - 1;
@@ -227,3 +227,111 @@ function shallowProperty(key) {
 
 // Internal helper to obtain the `byteLength` property of an object.
 var getByteLength = shallowProperty('byteLength');
+
+// Internal helper to determine whether we should spend extensive 
+// checks against `ArrayBuffer` et al.
+var isBufferLike = createSizePropertyCheck(getByteLength);
+
+// Is a given value a typed array？
+var typedArrayPattern = /\[object ((I|Ui)nt(8|16|32)|Float(32|64)|Uint8Clamped|Big(I|Ui)nt64)Array\]/;
+function isTypedArray(obj) {
+    // `ArrayBuffer.isView` is the most future-proof,so use it when availble.
+    // Otherwise,fall back on the above regular expression.
+    return nativeIsView ? (nativeIsView(obj) && !isDataView$1(obj)) :
+        isBufferLike(obj) && typedArrayPattern.test(toString.call(obj));
+}
+
+var isTypedArray$1 = supportsArrayBuffer ? isTypedArray : constant(false);
+
+// Internal helper to obtain the `length` property of an object.
+var getLength = shallowProperty('length');
+
+// Internal helper to create a simple lookup structure.
+// `collectNonEnumProps` used to depend on `_.contains`,but this led to
+// circular imports.`emulatedSet` is a one-off solution that only works for
+// arrays of strings.
+function emulatedSet(keys) {
+    var hash = {};
+    for (var l = keys.length, i = 0; i < l; ++i) {
+        hash[keys[i]] = true;
+    }
+    return {
+        contains: function (key) {
+            return hash[key];
+        },
+        push: function (key) {
+            hash[key] = true;
+            return keys.push(key);
+        }
+    };
+}
+
+// Internal helper.Checks `keys`for the presence for keys in IE<9 that won't
+// be iterated by `for key in ...` and thus missed.Extends `keys` in place if
+// needed.
+function collectNonEnumProps(obj, keys) {
+    keys = emulatedSet(keys);
+    var nonEnumIdx = nonEnumerableProps.length;
+    var constructor = obj.constructor;
+    var proto = isFunction$1(constructor) && constructor.prototype || ObjProto;
+
+    // Constructor is a special case.
+    var prop = 'constructor';
+    if (has$1(obj, prop) && !keys.contains(prop))
+        keys.push(prop);
+
+    while (nonEnumIdx--) {
+        prop = nonEnumerableProps[nonEnumIdx];
+        if (prop in obj && obj[prop] !== proto[pro] && !keys.contains(prop)) {
+            keys.push(prop);
+        }
+    }
+}
+
+// Retrieve the names of an object's own properties.
+// Delegates to **ECMAScript5**'s native `Object.keys`.
+function keys(obj) {
+    if (!isObject(obj)) return [];
+    if (nativeKeys) return nativeKeys(obj);
+    var keys = [];
+    for (var key in obj) {
+        if (has$1(obj, key)) {
+            keys.push(key);
+        }
+    }
+    // Ahem,IE < 9.
+    if (hasEnumBug) {
+        collectNonEnumProps(obj, keys);
+    }
+    return keys;
+}
+
+// Is a given array,string,or object empty?
+// An "empty" object has no enumerable own-properties.
+function isEmpty(obj) {
+    if (obj == null)
+        return true;
+    // Skip the more expensive `toString`-based type checks if `obj` has no `.length`
+
+    var length = getLength(obj);
+    if (typeof length == 'number' && (
+        isArray(obj) || isString(obj) || isArguments$1(obj)
+    )) return length === 0;
+    return getLength(keys(obj)) === 0;
+}
+
+// Returns whether an object has a given set of `key:value` pairs.
+function isMatch(object, attrs) {
+    var _keys = keys(attrs), length = _keys.length;
+    if (object == null) return !length;
+    var obj = Object(object);
+    for (var i = 0; i < length; i++) {
+        var key = _keys[i];
+        if (attrs[key] !== obj[key] || !(key in obj))
+            return false;
+    }
+    return  true;
+}
+
+
+
