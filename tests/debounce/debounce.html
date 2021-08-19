@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>test for debounce.js</title>
+    <script src="../../underscore.js"></script>
+</head>
+
+<body>
+    <script>
+        var count = 0;
+        
+        var func = _.debounce(function () {
+            var gn = _.debounce(function () {
+                console.log("gn")
+            }, 10);
+            gn();
+            console.log(count++)
+        }, -10);
+
+        window.onmousemove = func;
+    </script>
+</body>
+
+</html>

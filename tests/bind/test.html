@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+</head>
+
+<body>
+    <!-- <script src="../../underscore.js"></script> -->
+    <script>
+        import { default as bind } from '../../modules/bind.js';
+
+        function fn() {
+            console.log(this.name);
+        }
+
+        var name = "window";
+
+        var o = {
+            name: "object o"
+        }
+
+        var gn = bind(fn, o);
+        gn();
+
+
+
+
+
+    </script>
+</body>
+
+</html>

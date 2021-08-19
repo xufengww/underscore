@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+    <head></head>
+    <body>
+        <script src="../../underscore.js"></script>
+        <script>
+            function fn(a,b){
+                console.log(a,b);
+            }
+
+            var fn = _.restArguments(fn);
+
+            fn(1,2,3,4,5);
+        </script>
+    </body>
+</html>
