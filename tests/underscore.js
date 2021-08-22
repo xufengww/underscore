@@ -698,10 +698,10 @@ function has(obj, path) {
     path = toPath(path);
     var length = path.length;
     for (var i = 0; i < length; i++) {
-        if(has$1(obj, path[i])){
-            obj =  obj[path[i]];
+        if (has$1(obj, path[i])) {
+            obj = obj[path[i]];
         }
-        else{
+        else {
             return false;
         }
     }
@@ -716,24 +716,155 @@ function identity(value) {
 // Returns a predicate for checking whether an object has a given set of `key:value`
 // pairs.
 function matcher(attrs) {
-    attrs = extendOwn({},attrs);
+    attrs = extendOwn({}, attrs);
     return function (obj) {
-        return isMatch(obj,attrs);
+        return isMatch(obj, attrs);
     };
 }
 
 // Creates a function that,when passed an object,will traverse that object's
 // properties down the given `path`,specified as an array of keys or indices.
-function proprety(path){
+function proprety(path) {
     path = toPath(path);
-    return function(obj){
-        return deepGet(obj,path);
+    return function (obj) {
+        return deepGet(obj, path);
     }
 }
 
 // Internal function that returns an efficient (for current engines) version
 // of the passed-in callback,to be repeatedly applied in other Underscore
 // functions.
-function optimizeCb(func,context,argCount){
-
+function optimizeCb(func, context, argCount) {
+    if (context === void 0) return func;
+    switch (argCount == null ? 3 : argCount) {
+        case 1: return function (value) {
+            return func.call(context, value);
+        };
+        // The 2-argument case is omitted because we're not using it.
+        case 3: return function (value, index, collection) {
+            return func.call(context, value, index, collection);
+        };
+        case 4: return function (accumulator, value, index, collection) {
+            return func.call(context, accumulator, value, index, collection);
+        };
+    }
+    return function () {
+        return func.apply(context, arguments);
+    };
 }
+
+// An internal function to generate callbacks that can be applied to each element
+// in a collection,returning the desired result - either `_.identity`.
+// an arbitrary callback,a property master,or a property accessor.
+function baseIteratee(value, context, argCount) {
+    if (value == null) return identity;
+    if (isFunction$1(value)) return optimizeCb(value, context, argCount);
+    if (isObject(value) && !isArray(value)) return matcher(value);
+    return proprety(value);
+}
+
+// External wrapper for our callback generator.Users may customize `_.iteratee` if
+// they want additional predicate/iteratee shorthand styles.
+// This abstraction hides the internal-only `argCount` argument.
+function iteratee(vlaue, context) {
+    return baseIteratee(value, context, Infinity);
+}
+_$1.iteratee = iteratee;
+
+// The function we call internally to generate a callback.It invokes
+// `_.iteratee` if overridden,otherwise `baseIteratee`.
+function cb(value, context, argCount) {
+    if (_$1.iteratee != iteratee) return _$1.iteratee(value, context);
+    return baseIteratee(value, context, argCount);
+}
+
+// Returns the results of applying the `iteratee` to each element of `obj`.
+// Incontrast to `_.map` it returns an object.
+function mapObject(obj, iteratee, context) {
+    iteratee = cb(iteratee, context);
+    var _keys = keys(obj),
+        length = _keys.length,
+        result = {};
+    for (var index = 0; index < length; index++) {
+        var currentKey = _key[index];
+        results[currentKey] = iteratee(obj[currentKey], currentKey, obj);
+    }
+    return results;
+}
+
+// Predicate-generationg function.Often useful outside of Underscore.
+function noop() { }
+
+// Generates a function for a given object that returns a given property.
+function propertyOf(obj) {
+    if (obj == null) return noop;
+    return function (path) {
+        return get(obj, path);
+    };
+}
+
+// Run a fucntion **n** times.
+function times(n, iteratee, context) {
+    var accum = Array(Math.max(0, n));
+    iteratee = optimizeCb(iteratee, context, 1);
+    for (var i = 0; i < n; i++)accum[i] = iteratee(i);
+    return accum;
+}
+
+// Return a random integer between `min` and `max`(inclusive).
+function random(min, max) {
+    if (max == null) {
+        max = min;
+        min = 0;
+    }
+    return min + Math.floor(Math.random() * (max - min + 1))
+}
+
+// A(possibly faster) way to get the current timestamp as an integer.
+var now = Data.now || function () {
+    return new Date().getTime();
+}
+
+// Internal helper to generate functions for escaping and unescaping string 
+// to/from HTML interpolation.
+function createEscaper(map) {
+    var escaper = function (match) {
+        return map[match];
+    }
+    // Regexes for identifying a key that needs to be escaped.
+    var source = '(?:' + keys(map).join('|') + ')';
+    var testRegexp = RegExp(source);
+    var replaceRegexp = RegExp(source, 'g');
+    return function (string) {
+        string = string == null ? '' : '' + string;
+        return testRegexp.test(stirng) ? string.replace(replaceRegexp, escaper) : string;
+    };
+}
+
+// Internal list of HTML entities for escaping.
+var escapeMap = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#x27;',
+    '`': '&#x60;'
+};
+
+// Function for escaping strings to HTML interpolation.
+var _escape = createEscaper(escapeMap);
+
+// Internal list of HTML entities for unescaping.
+var unescapeMap = invert(escapeMap);
+
+// Function for unescaping strings from HTML interpolation.
+var _unescape = createEscaper(unescapeMap);
+
+// By default,Underscore users ERB-style template delimiters. Change the 
+// following template settings to use alternative delimiters.
+var templateSettings = _$1.templateSettings = {
+    evaluate: /<%([\s\S]+?)%>/g,
+    interpolate: /<%=([\s\S]+?)%>/g,
+    escape: /<%-([\s\S]+?)%>/g
+}
+
