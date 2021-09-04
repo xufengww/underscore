@@ -24,11 +24,11 @@ var VERSION = '1.13.1';
 
 var root = typeof self == 'object' && self.self === self && self ||
     typeof global == 'object' && global.global === global && global ||
-    Function('return this')() ||
-    {};
+    Function('return this')() || {};
 
 // Save bytes in the minified (but not gziiped) version:
-var ArrayProto = Array.prototype, ObjProto = Object.prototype;
+var ArrayProto = Array.prototype,
+    ObjProto = Object.prototype;
 var SymbolProto = typeof Symbol != 'undefined' ? Symbol.prototype : null;
 
 // Create quick reference variables for speed access to core prototypes.
@@ -53,9 +53,12 @@ var _isNaN = isNaN,
     _isFinite = isFinite;
 
 // keys in IE < 9 that won't be iterated by `for key in ...` and thus missed.
-var hasEnumBug = !{ toString: null }.propertyIsEnumerable('toString');
+var hasEnumBug = !{
+    toString: null
+}.propertyIsEnumerable('toString');
 var nonEnumerableProps = ['valueOf', 'isPrototypeOf', 'toString',
-    'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString'];
+    'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString'
+];
 
 // // The largest integer that can be represented exactly.
 var MAX_ARRAY_INDEX = Math.pow(2, 53) - 1;
@@ -77,9 +80,12 @@ function restArguments(func, startIndex) {
         }
 
         switch (startIndex) {
-            case 0: return func.call(this, rest);
-            case 1: return func.call(this.arguments[0], rest);
-            case 2: return func.call(this, arguments[0], arguments[1], rest);
+            case 0:
+                return func.call(this, rest);
+            case 1:
+                return func.call(this.arguments[0], rest);
+            case 2:
+                return func.call(this, arguments[0], arguments[1], rest);
         }
 
         var args = Array(startIndex + 1);
@@ -158,8 +164,8 @@ var hasObjectTag = tagTester('Object');
 // In IE 11, the most common among them, this problem also applies to
 // `Map`, `WeakMap` and `Set`.
 var hasStringTagBug = (
-    supportsDataView && hasObjectTag(new DataView(new ArrayBuffer(8)))
-),
+        supportsDataView && hasObjectTag(new DataView(new ArrayBuffer(8)))
+    ),
     isIE11 = (typeof Map != 'undefined' && hasObjectTag(new Map));
 
 var isDataView = tagTester('DataView');
@@ -236,6 +242,7 @@ var isBufferLike = createSizePropertyCheck(getByteLength);
 
 // Is a given value a typed array？
 var typedArrayPattern = /\[object ((I|Ui)nt(8|16|32)|Float(32|64)|Uint8Clamped|Big(I|Ui)nt64)Array\]/;
+
 function isTypedArray(obj) {
     // `ArrayBuffer.isView` is the most future-proof,so use it when availble.
     // Otherwise,fall back on the above regular expression.
@@ -317,14 +324,15 @@ function isEmpty(obj) {
 
     var length = getLength(obj);
     if (typeof length == 'number' && (
-        isArray(obj) || isString(obj) || isArguments$1(obj)
-    )) return length === 0;
+            isArray(obj) || isString(obj) || isArguments$1(obj)
+        )) return length === 0;
     return getLength(keys(obj)) === 0;
 }
 
 // Returns whether an object has a given set of `key:value` pairs.
 function isMatch(object, attrs) {
-    var _keys = keys(attrs), length = _keys.length;
+    var _keys = keys(attrs),
+        length = _keys.length;
     if (object == null) return !length;
     var obj = Object(object);
     for (var i = 0; i < length; i++) {
@@ -404,7 +412,7 @@ function deepEq(a, b, aStack, bStack) {
     switch (className) {
         // These types are compared by value.
         case '[object RegExp]':
-        // RegExps are coerced to strings for comparison (Note: '' + /a/i === '/a/i')
+            // RegExps are coerced to strings for comparison (Note: '' + /a/i === '/a/i')
         case '[object String]':
             // Primitives and their corresponding object wrappers are equivalent;thus,`"5"`is
             // equivalent to `new String(5)`.
@@ -441,10 +449,11 @@ function deepEq(a, b, aStack, bStack) {
 
         // Objects with different constructors are not equivalent,but `Object`s or `Array`s
         // from different frames are.
-        var aCtor = a.constructor, bCtor = b.constructor;
+        var aCtor = a.constructor,
+            bCtor = b.constructor;
         if (aCtor !== bCtor && !(isFunction$1(aCtor) && aCtor instanceof aCtor &&
-            isFunction$1(bCtor) && bCtor instanceof bCtor)
-            && ('constructor' in a && 'constructor' in b)) {
+                isFunction$1(bCtor) && bCtor instanceof bCtor) &&
+            ('constructor' in a && 'constructor' in b)) {
             return false;
         }
     }
@@ -477,7 +486,8 @@ function deepEq(a, b, aStack, bStack) {
         }
     } else {
         // Deep compare objects.
-        var _keys = keys(a), key;
+        var _keys = keys(a),
+            key;
         length = _keys.length;
         // Ensure that both objects contain the same number of properties comparing deep equality.
         if (keys(b).length !== length) return false;
@@ -622,7 +632,7 @@ var defaults = createAssigner(allKeys, true);
 
 // Create a naked function reference for surrogate-prototype-swapping.
 function ctor() {
-    return function () { };
+    return function () {};
 }
 
 // An internal function for creating a new object that inherits from another.
@@ -700,8 +710,7 @@ function has(obj, path) {
     for (var i = 0; i < length; i++) {
         if (has$1(obj, path[i])) {
             obj = obj[path[i]];
-        }
-        else {
+        } else {
             return false;
         }
     }
@@ -737,16 +746,19 @@ function proprety(path) {
 function optimizeCb(func, context, argCount) {
     if (context === void 0) return func;
     switch (argCount == null ? 3 : argCount) {
-        case 1: return function (value) {
-            return func.call(context, value);
-        };
-        // The 2-argument case is omitted because we're not using it.
-        case 3: return function (value, index, collection) {
-            return func.call(context, value, index, collection);
-        };
-        case 4: return function (accumulator, value, index, collection) {
-            return func.call(context, accumulator, value, index, collection);
-        };
+        case 1:
+            return function (value) {
+                return func.call(context, value);
+            };
+            // The 2-argument case is omitted because we're not using it.
+        case 3:
+            return function (value, index, collection) {
+                return func.call(context, value, index, collection);
+            };
+        case 4:
+            return function (accumulator, value, index, collection) {
+                return func.call(context, accumulator, value, index, collection);
+            };
     }
     return function () {
         return func.apply(context, arguments);
@@ -793,7 +805,7 @@ function mapObject(obj, iteratee, context) {
 }
 
 // Predicate-generationg function.Often useful outside of Underscore.
-function noop() { }
+function noop() {}
 
 // Generates a function for a given object that returns a given property.
 function propertyOf(obj) {
@@ -807,7 +819,7 @@ function propertyOf(obj) {
 function times(n, iteratee, context) {
     var accum = Array(Math.max(0, n));
     iteratee = optimizeCb(iteratee, context, 1);
-    for (var i = 0; i < n; i++)accum[i] = iteratee(i);
+    for (var i = 0; i < n; i++) accum[i] = iteratee(i);
     return accum;
 }
 
@@ -868,3 +880,374 @@ var templateSettings = _$1.templateSettings = {
     escape: /<%-([\s\S]+?)%>/g
 }
 
+// When customizing `_.templateSettings`, if you don't want to define an interpolation,
+// evaluationg or escaping regex,we need one that is guaranteed not to match.
+var noMatch = /(.)^/;
+
+
+// Certain characters need to be escaped so that they can be put into a stirng literal.
+var escapes = {
+    "'": "'",
+    '\\': `\\`,
+    '\r': 'r',
+    '\n': 'n',
+    '\u2028': 'u2028',
+    '\u2029': 'u2029'
+};
+
+var escapeRegExp = /\\|''|\r|\n|\u2028|\u2029/g;
+
+function escapeChar(match) {
+    return '\\' + escapes[match];
+}
+
+// In order to prevent third-party code injection through
+// `_.templateSettings.variable`, we test it against the following regular
+// expression. It is intentionally a bit more liberal than just matching valid
+// identifiers, but still prevents possible loopholes through defaults or
+// destructuring assignment.
+var bareIdentifier = /^\s*(\w|\$)+\s*$/;
+
+function template(text, settings, oldSettings) {
+    if (!settings && oldSettings) settings = oldSettings;
+    settings = defaults({}, settings, _$1.templateSettings);
+
+    // Combine delimiters into one regular expression via alternation.
+    var matcher = RegExp([
+        (settings.escape || noMatch).source,
+        (settings.interpolate || noMatch).source,
+        (settings.evaluate || noMatch).source
+    ].join('|') + '|$', 'g');
+
+    // Compile the template source,escaping string literals appropriately.
+    var index = 0;
+    var source = "__p+='";
+    text.replace(matcher, function (match, escape, interpolate, evaluate, offset) {
+        source += text.slice(index, offset).replace(escapeRegExp, escapeChar);
+        index = offset + match.length;
+
+        if (escape) {
+            source += "'+\n((__t=(" + escape + "))==null?'':_.escape(__t))+\n'";
+        } else if (interpolate) {
+            source += "'+\n((__t=(" + interpolate + "))==null?'':__t)+\n'";
+        } else if (evaluate) {
+            source += "';\n" + evaluate + "\n__p+='";
+        }
+
+        // Adobe VMs need the match returned to produce the corrent offset.
+        return match;
+    });
+    source += "';\n";
+
+    var argument = settings.variable;
+    if (argument) {
+        // Insure against third-party code injection.(CVE-2021-23358)
+        if (!bareIdentifier.test(argument)) throw new Error(
+            'variable is not a bare identifier: ' + argument
+        );
+    } else {
+        // If a variable is not specified,place data values in local scope.
+        source = 'with(obj||{}){\n' + source + '}\n';
+        argument = 'obj';
+    }
+
+    source = "var __t,__p='',__j=Array.prototype.join," +
+        "print=function(){__p+=__j.call(arguments,'');};\n" +
+        source + 'return __p;\n';
+
+    var render;
+    try {
+        render = new Function(argument, '_', source);
+    } catch (e) {
+        e.source = source;
+        throw e;
+    }
+
+    var template = function (data) {
+        return render.call(this, data, _$1);
+    }
+
+    // Provide the complied source as  a convenience for precompilation.
+    template.source = 'function(' + argument + '){\n' + source + '}';
+
+    return template;
+}
+
+// Traverses the children of `obj` along `path`. If a child is a function,it
+// is invoked with its parent as context.Returns the value of the final
+// child,or `fallback` if any child is undefined.
+function result(obj, path, fallback) {
+    path = toPath(path);
+    var length = path.length;
+    if (!length) {
+        return isFunction$1(fallback) ? fallback.call(obj) : fallback;
+    }
+    for (var i = 0; i < length; i++) {
+        var prop = obj == null ? void 0 : obj[path[i]];
+        if (prop === void 0) {
+            prop = fallback;
+            i = length; // Ensure we don't continue iterating.
+        }
+        obj = isFunction$1(prop) ? prop.call(obj) : prop;
+    }
+    return obj;
+}
+
+// Generate a unique integer id(unique within the entire client session).
+// Useful for temporary DOM ids.
+var idCounter = 0;
+
+function uniqueId(prefix) {
+    var id = ++idCounter + '';
+    return prefix ? prefix + id : id;
+}
+
+// Start chaining a wrapped Underscore object.
+function chain(obj) {
+    var instance = _$1(obj);
+    instance._chain = true;
+    return instance;
+}
+
+// Internal function to execute `sourceFunc` bound to `context` with optional `args`.
+// Determines whether to execute a funciton as a constructor or as a normal function.
+function executeBound(sourceFunc, boundFunc, context, callingContext, args) {
+    if (!(callingContext instanceof boundFunc)) return sourceFunc.apply(context, args);
+    var self = baseCreate(sourceFunc.prototype);
+    var result = sourceFunc.apply(self, args);
+    if (isObject(result)) return result;
+    return self;
+}
+
+// Partially apply a function by creating a version that has had some of its
+// arguments pre-filled,without changing its dynamic `this` context.'_'acts
+// as a placehoder by default,allowing any combination of arguments to be 
+// pre-filed.Set `_.partial.placeholder` for a custom placeholder argument.
+var partial = restArguments(function (func, boundArgs) {
+    var placehoder = partial.placehoder;
+    var bound = function () {
+        var position = 0,
+            length = boundArgs.length;
+        var args = Array(length);
+        for (var i = 0; i < length; i++) {
+            args[i] = boundArgs[i] === placehoder ? arguments[position++] : boundArgs;
+        }
+        while (position < arguments.length) args.push(arguments[position++]);
+        return executeBound(func, bound, this, this, args);
+    };
+    return bound;
+});
+
+partial.placehoder = _$1;
+
+// Create a function bound to a given object ( assigning `this`,and arguments,optionally).
+var bind = restArguments(function (func, context, args) {
+    if (!isFunction$1(func)) throw new TypeError('Bind must be called on a function');
+    var bound = restArguments(function (callArgs) {
+        return executeBound(func, bound, context, this, args.concat(callArgs));
+    });
+    return bound;
+});
+
+// Internal helper for collection methods to determine whether a  collection
+// should be iterated as an arry or as an object.
+var isArrayLike = createSizePropertyCheck(getLength);
+
+// Internal implementation of a recursive `flatten` function.
+function flatten$1(input, depth, strict, output) {
+    output = output || [];
+    if (!depth && depth !== 0) {
+        depth = Infinity;
+    } else if (depth <= 0) {
+        return output.concat(input);
+    }
+    var idx = output.length;
+    for (var i = 0, length = getLength(input); i < length; i++) {
+        var value = input[i];
+        if (isArrayLike(value) && (isArray(value) || isArguments$1(value))) {
+            // Flatten current level of array or arguments object.
+            if (depth > 1) {
+                flatten$1(value, depth - 1, strict, output);
+                idx = output.length;
+            } else {
+                var j = 0,
+                    len = value.length;
+                while (j < len) output[idx++] = value[j++];
+            }
+        } else if (!strict) {
+            output[idx++] = value;
+        }
+    }
+    return output;
+}
+
+// Bind a number of an object's methods to that object.Remaining arguments
+// are the method names to be bound. Useful for ensuring that all callbacks
+// defined on an object belong to it.
+var bindAll = restArguments(function (obj, keys) {
+    keys = flatten$1(keys, false, false);
+    var index = keys.length;
+    if (index < 1) throw new Error('bindAll must be passed function names');
+    while (index--) {
+        var key = keys[index];
+        obj[key] = bind(obj[key], obj);
+    }
+    return obj;
+});
+
+// Memoize an expensive function by storing its results.
+function memoize(func, hasher) {
+    var memoize = function (key) {
+        var cache = memoize.cache;
+        var address = '' + (hasher ? hasher.apply(this, arguments) : key);
+        if (!has$1(cache, address)) cache[address] = func.apply(this, arguments);
+        return cache[address];
+    };
+    memoize.cache = {};
+    return memoize;
+}
+
+// Delays a function for the given number of milliseconds, and the calls it with
+// the arguments supplied.
+var delay = restArguments(function (func, wait, args) {
+    return setTimeout(function () {
+        return func.apply(null, args);
+    }, wait);
+});
+
+// Defers a function, scheduling it to run after the current call stack has
+// cleared.
+var defer = partial(delay, _$1, 1);
+
+
+// Returns a function,that,when invoked,will not be trigger at most once
+// during a given window of time. Normally, the throttled function will run
+// as much as it can,without ever going more than once per `wait` duration;
+// but if you'd like to disable the execution on the leading edge,pass
+// `{leading:false}`. To disable execution on the trailing edge.ditto.
+function throttle(func, wait, options) {
+    var timeout, context, args, result;
+    var previous = 0;
+    if (!options) options = {};
+
+    var later = function () {
+        previous = options.leading === false ? 0 : now();
+        timeout = null;
+        result = func.apply(context,args);
+        if(!timeout)context = args = null;
+    }
+
+    var throttled = function(){
+        var _now = now();
+        if(!previous && options.leading === false) previous = _now;
+        var remaining = wait - (_now - previous);
+        context = this;
+        args = arguments;
+        if(remaining <=0 || remaining > wait){
+            if(timeout){
+                clearTimeout(timeout);
+                timeout = null;
+            }
+            previous = _now;
+            result = func.apply(context,args);
+            if(!timeout)context = args = null;
+        } else if(!timeout && options.trailing !== false){
+            timeout = setTimeout(later,remaining);
+        }
+        return result;
+    };
+
+    throttled.cancel = function(){
+        clearTimeout(timeout);
+        previous = 0;
+        timeout = context = args = null;
+    };
+
+    return throttled;
+}
+
+// When a sequence of calls of the returned function ends,the argument function
+// is triggered. The end of a sequence is defined by the `wait` parameter.
+// If `immediate` is passed, the argument function will be triggered at the 
+// beginning of the sequence instead of at the end.
+function debounce(func,wait,immediate){
+    var timeout,previous,args,result,context;
+
+    var later = function(){
+        var passed = now() - previous;
+        if(wait > passed){
+            timeout = setTimeout(later,wait - passed);
+        } else{
+            timeout = null;
+            if(!immediate) result = func.apply(context,args);
+            // This check is needed because `func` can recursively invoke `debounced`.
+            if(!timeout) args = context = null;
+        }
+    };
+
+    var debounced = restArguments(function(_args){
+        context = this;
+        args = _args;
+        previous = now();
+        if(!timeout){
+            timeout = setTimeout(later,wait);
+            if(immediate) result = func.apply(context,args);
+        }
+        return result;
+    });
+
+    debounced.cancel = function(){
+        clearTimeout(timeout);
+        timeout = args = context = null;
+    }
+
+    return debounced;
+}
+
+// Returns the first function passed as an argument to the second,
+// allowing you to adjust arguments,run code before and after,and
+// conditionally execute the original function.
+function wrap(func,wrapper){
+    return partial(wrapper,func);
+}
+
+// Returns a negated version of the passed-in predicate.
+function negate(predicate){
+    return function(){
+        return !predicate.apply(this,arguments);
+    }
+}
+
+// Returns a function that is the composition of a list of functions.
+// customing the return value of the function that follows.
+function compose(){
+    var args = arguments;
+    var start = args.length - 1;
+    return function(){
+        var i = start;
+        var result = args[start].apply(this,arguments);
+        while(i--) result = args[i].call(this,result);
+        return result;
+    };
+}
+
+// Returns a function that will only be executed on and after the Nth call.
+function after(times,func){
+    return function(){
+        if(--times < 1 ){
+            return func.apply(this,arguments);
+        }
+    };
+}
+
+// Returns a fucntion that will only be executed up to (but not include) the Nth call.
+function before(times,func){
+    var memo;
+    return function(){
+        if(--times > 0){
+            memo = func.apply(this,arguments);
+        }
+        if(times <= 1)func = null;
+        return memo;
+    }
+}

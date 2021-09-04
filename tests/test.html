@@ -6,11 +6,111 @@
 </head>
 
 <body>
-    <script src="../underscore.js"></script>
+    <button>请点击我</button>
+    <!-- <script src="../underscore.js"></script> -->
     <script>
-        console.log(_.map([1, 2, 3], function (item) {
-            return item + 1;
-        },{obj:"xufeng"}))
+        let now = Date.now || function () {
+            return new Date().getTime();
+        };
+
+        // function debounce(func, wait, immediate) {
+        //     let timeout = null, context, args, result, previous;
+
+        //     let later = function () {
+        //         let lastPassed = now() - previous;
+        //         if(wait > lastPassed){ //sleep not enough time.
+        //             timeout = setTimeout(later,wait - lastPassed);
+        //         }
+        //         else{ //sleep enough time.
+        //             timeout = null;
+        //             if (!immediate) result = func.apply(context, args);
+        //             context = args = null;
+        //         }
+
+        //         return result;
+
+        //     }
+        //     return function (_args) {
+        //         context = this;
+        //         args = _args;
+        //         previous = now();
+        //         if (!timeout) {
+        //             console.log(timeout);
+        //             if (immediate) result = func.apply(context, args);
+        //             timeout = setTimeout(later, wait);
+        //         }
+        //         return result;
+        //     }
+        // }
+
+        function handle(e) {
+            let count = 0;
+            return function () {
+                console.log(this, count++);
+            }
+        }
+
+        // let btn = document.querySelector('button');
+        // btn.onmousedown = debounce(handle(), 1000,true);
+
+        // function throttle(func, wait) {
+        //     var context, args, timeout;
+
+        //     var previous = 0;
+
+        //     return function (_args) {
+        //         context = this;
+        //         args = args;
+        //         previous = now();
+
+        //         if (!timeout) {
+        //             func.apply(context, args);
+        //             timeout = setTimeout(function () {
+        //                 timeout = null;
+        //             }, wait);
+        //         }
+
+        //     }
+
+        // }
+
+
+        function throttle(func, wait, options) {
+            var context, args, previous = 0,
+                result;
+            if (!options) options = {};
+
+            var later = function () {
+                previous = options.leading === false ? 0 : now();
+                timeout = null;
+                result = func.call(context, args);
+                if (!timeout) context = args = null;
+            }
+
+            return function (_args) {
+                context = this;
+                args = _args;
+                if (options.leading === false) previous = now();
+
+                var remaining = wait - (now() - previous);
+                if (remaining <= 0 || remaining > wait) {
+                    //traggle 
+                    if (timeout) {
+                        clearTimeout(timeout);
+                        timeout = null;
+                    }
+                    previous = now();
+                    result = func.call(context, args);
+                    context = args = null;
+                } else if (!timeout && options.trailing !== false) {
+                    timeout = setTimeout(later, wait);
+                }
+                return result;
+            }
+        }
+
+        let btn = document.querySelector('button');
+        btn.onmousedown = throttle(handle(), 3000);
     </script>
 </body>
 
